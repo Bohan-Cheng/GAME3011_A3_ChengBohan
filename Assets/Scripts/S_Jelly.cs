@@ -17,7 +17,6 @@ public class S_Jelly : MonoBehaviour
 {
     [SerializeField] List<Sprite> Icons;
 
-
     E_JellyType type = E_JellyType.Black;
     Image CurrentImage;
     Animator anim;
@@ -27,14 +26,16 @@ public class S_Jelly : MonoBehaviour
     bool isDraging = false;
     bool shouldUpdate = false;
 
+    [HideInInspector] public Vector2 GridPos;
+
     // Start is called before the first frame update
     void Start()
     {
-        CurrentImage = GetComponent<Image>();
-        anim = GetComponent<Animator>();
+        CurrentImage = GetComponentInChildren<Image>();
+        anim = GetComponentInChildren<Animator>();
         StartCoroutine(Spawn());
 
-        OriPosition = transform.parent.localPosition;
+        OriPosition = transform.localPosition;
 
         SetType((E_JellyType)Random.Range(0, 6));
     }
@@ -44,12 +45,12 @@ public class S_Jelly : MonoBehaviour
     {
         if (shouldUpdate)
         {
-            if (!isDraging && Vector3.Distance(OriPosition, transform.parent.localPosition) >= 0.1f)
+            if (!isDraging && Vector3.Distance(OriPosition, transform.localPosition) >= 0.1f)
             {
-                transform.parent.localPosition = Vector3.Lerp(transform.parent.localPosition, OriPosition, 8.0f * Time.deltaTime);
-                if(Vector3.Distance(OriPosition, transform.parent.localPosition) <= 0.1f)
+                transform.localPosition = Vector3.Lerp(transform.localPosition, OriPosition, 8.0f * Time.deltaTime);
+                if(Vector3.Distance(OriPosition, transform.localPosition) <= 0.1f)
                 {
-                    transform.parent.localPosition = OriPosition;
+                    transform.localPosition = OriPosition;
                     shouldUpdate = false;
                 }
             }
@@ -84,26 +85,24 @@ public class S_Jelly : MonoBehaviour
     IEnumerator Spawn()
     {
         yield return new WaitForSeconds(Random.Range(0.5f, 2.0f));
-        anim.SetTrigger("Play");
-        StartCoroutine(PlaySound());
-    }
-
-    IEnumerator PlaySound()
-    {
+        anim.SetTrigger("Fall");
         yield return new WaitForSeconds(0.8f);
         FindObjectOfType<S_SoundMana>().PlayBounce();
     }
 
     public void DragJelly()
     {
+        if(shouldUpdate)
+        {
+            shouldUpdate = false;
+        }
+        transform.SetAsLastSibling();
         transform.parent.SetAsLastSibling();
-        transform.parent.parent.SetAsLastSibling();
-        transform.parent.position = Input.mousePosition;
+        transform.position = Input.mousePosition;
     }
 
     public void DropJelly()
     {
-        Debug.Log("DROP");
         shouldUpdate = true;
         FindClosestJelly();
         SwapJellies();
@@ -114,9 +113,18 @@ public class S_Jelly : MonoBehaviour
         if (TargetJelly)
         {
             Vector3 temp = TargetJelly.OriPosition;
+            Vector2 temp2 = TargetJelly.GridPos;
+
             TargetJelly.OriPosition = OriPosition;
-            OriPosition = temp;
+            TargetJelly.GridPos = GridPos;
             TargetJelly.shouldUpdate = true;
+
+            OriPosition = temp;
+            GridPos = temp2;
+
+            anim.SetTrigger("Bounce");
+            TargetJelly.anim.SetTrigger("Bounce");
+            FindObjectOfType<S_SoundMana>().PlayBounce();
         }
     }
     void FindClosestJelly()
@@ -125,11 +133,11 @@ public class S_Jelly : MonoBehaviour
         gos = GameObject.FindGameObjectsWithTag("Jelly");
         GameObject closest = null;
         float distance = Mathf.Infinity;
-        Vector3 position = transform.parent.localPosition;
+        Vector3 position = transform.localPosition;
 
         foreach (GameObject go in gos)
         {
-            if (go != transform.parent.gameObject)
+            if (go != transform.gameObject)
             {
                 Vector3 diff = go.transform.localPosition - position;
                 float curDistance = diff.sqrMagnitude;
@@ -142,7 +150,18 @@ public class S_Jelly : MonoBehaviour
         }
         if(closest)
         {
-            TargetJelly = closest.GetComponentInChildren<S_Jelly>();
+            if (IsInSwapRange(closest.GetComponent<S_Jelly>().GridPos))
+            {
+                TargetJelly = closest.GetComponent<S_Jelly>();
+            }
         }
+    }
+
+    bool IsInSwapRange(Vector2 targetPos)
+    {
+        float x = Mathf.Abs(GridPos.x - targetPos.x);
+        float y = Mathf.Abs(GridPos.y - targetPos.y);
+        float dist = x + y;
+        return dist == 1.0f;
     }
 }

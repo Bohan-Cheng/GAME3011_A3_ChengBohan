@@ -7,7 +7,6 @@ public class S_JellyTable : MonoBehaviour
     [SerializeField] GameObject JellyPrefab;
     public int SizeX = 9;
     public int SizeY = 8;
-    GameObject[,] Jellies;
 
     Vector2 Offset = new Vector2(-320.0f, 320.0f);
 
@@ -24,7 +23,6 @@ public class S_JellyTable : MonoBehaviour
 
     void SpawnJellies()
     {
-        Jellies = new GameObject[SizeX, SizeY];
         for (int y = 0; y < SizeY; y++)
         {
             for (int x = 0; x < SizeX; x++)
@@ -34,7 +32,7 @@ public class S_JellyTable : MonoBehaviour
                 Pos.x = x * 80.0f;
                 Pos.y = y * -80.0f;
                 jelly.GetComponent<RectTransform>().anchoredPosition = Pos + Offset;
-                Jellies[x,y] = jelly;
+                jelly.GetComponent<S_Jelly>().GridPos = new Vector2(x, y);
             }
         }
     }

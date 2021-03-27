@@ -40,6 +40,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5944578998539370385}
   - component: {fileID: 5944578998539370391}
+  - component: {fileID: 3352365288070241279}
   m_Layer: 5
   m_Name: Jelly
   m_TagString: Jelly
@@ -75,6 +76,26 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5944578998539370384}
   m_CullTransparentMesh: 1
+--- !u!114 &3352365288070241279
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5944578998539370384}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6816484bb4d902d468c55cbe66411be7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Icons:
+  - {fileID: 21300000, guid: cb63f2c2e50350b408a07392a5e26a9d, type: 3}
+  - {fileID: 21300000, guid: b104e291c6e352445b1f3c53d9ccc7e5, type: 3}
+  - {fileID: 21300000, guid: 8c97bd711e895cd46a0cfb2edcc96fc8, type: 3}
+  - {fileID: 21300000, guid: 088a7317852ba4c4d9476414e98e95de, type: 3}
+  - {fileID: 21300000, guid: 78a0489586c9590408faee715f57d6ef, type: 3}
+  - {fileID: 21300000, guid: f2bade2eeac5989498b6a39d62255de6, type: 3}
+  GridPos: {x: 0, y: 0}
 --- !u!1 &7087639439687267928
 GameObject:
   m_ObjectHideFlags: 0
@@ -86,7 +107,6 @@ GameObject:
   - component: {fileID: 4250592544652025847}
   - component: {fileID: 1504395329820090918}
   - component: {fileID: 2349481691411316005}
-  - component: {fileID: 7482555294483747179}
   - component: {fileID: 1690054906934333867}
   - component: {fileID: 960210999625955516}
   m_Layer: 5
@@ -154,25 +174,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &7482555294483747179
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7087639439687267928}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6816484bb4d902d468c55cbe66411be7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Icons:
-  - {fileID: 21300000, guid: cb63f2c2e50350b408a07392a5e26a9d, type: 3}
-  - {fileID: 21300000, guid: b104e291c6e352445b1f3c53d9ccc7e5, type: 3}
-  - {fileID: 21300000, guid: 8c97bd711e895cd46a0cfb2edcc96fc8, type: 3}
-  - {fileID: 21300000, guid: 088a7317852ba4c4d9476414e98e95de, type: 3}
-  - {fileID: 21300000, guid: 78a0489586c9590408faee715f57d6ef, type: 3}
-  - {fileID: 21300000, guid: f2bade2eeac5989498b6a39d62255de6, type: 3}
 --- !u!95 &1690054906934333867
 Animator:
   serializedVersion: 3
@@ -209,7 +210,7 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 7482555294483747179}
+        - m_Target: {fileID: 3352365288070241279}
           m_TargetAssemblyTypeName: S_Jelly, Assembly-CSharp
           m_MethodName: DragJelly
           m_Mode: 1
@@ -225,7 +226,7 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 7482555294483747179}
+        - m_Target: {fileID: 3352365288070241279}
           m_TargetAssemblyTypeName: S_Jelly, Assembly-CSharp
           m_MethodName: DropJelly
           m_Mode: 1

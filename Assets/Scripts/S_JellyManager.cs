@@ -33,29 +33,36 @@ public class S_JellyManager : MonoBehaviour
     {
         difficulty = E_Difficulty.Easy;
         MaxStones = 0;
-        FindObjectOfType<S_JellyTable>().ResetTable();
         ModeText.text = "Mode: Easy";
+        ManaReset();
     }
 
     public void MediumMode()
     {
         difficulty = E_Difficulty.Medium;
         MaxStones = 0;
-        FindObjectOfType<S_JellyTable>().ResetTable();
         ModeText.text = "Mode: Medium";
+        ManaReset();
     }
 
     public void HardMode()
     {
         difficulty = E_Difficulty.Hard;
         MaxStones = 10;
-        FindObjectOfType<S_JellyTable>().ResetTable();
         ModeText.text = "Mode: Hard";
+        ManaReset();
     }
 
     public void AddScore(int score)
     {
         Score += score;
         ScoreText.text = Score.ToString();
+    }
+
+    void ManaReset()
+    {
+        Score = 0;
+        ScoreText.text = Score.ToString();
+        FindObjectOfType<S_JellyTable>().ResetTable();
     }
 }

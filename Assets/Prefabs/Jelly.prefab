@@ -67,7 +67,8 @@ MonoBehaviour:
   - {fileID: 21300000, guid: f2bade2eeac5989498b6a39d62255de6, type: 3}
   - {fileID: 21300000, guid: 9edd11701d8a6c94e80050ce7105a331, type: 3}
   - {fileID: 21300000, guid: 582b70a5031446747963fc5c6d12219e, type: 3}
-  type: 0
+  type: 8
+  isSet: 0
   GridPos: {x: 0, y: 0}
 --- !u!1 &7087639439687267928
 GameObject:

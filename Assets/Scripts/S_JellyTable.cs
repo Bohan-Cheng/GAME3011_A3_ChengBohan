@@ -5,25 +5,31 @@ using UnityEngine;
 public class S_JellyTable : MonoBehaviour
 {
     [SerializeField] GameObject JellyPrefab;
-   // public List<GameObject> Jellies;
     public GameObject[,] Jellies;
     public int SizeX = 9;
     public int SizeY = 8;
     List<GameObject> matchObj;
+    List<GameObject> ToKillObj;
+    public bool isChecking = false;
 
     Vector2 Offset = new Vector2(-320.0f, 320.0f);
 
     void Start()
     {
         matchObj = new List<GameObject>();
+        ToKillObj = new List<GameObject>();
         Jellies = new GameObject[SizeX, SizeY];
-        SpawnJellies();
-        StartCoroutine(DelayStart());
+        Invoke("SpawnJellies", 1.0f);
     }
 
     // Update is called once per frame
     void Update()
     {
+        if(IsTableSet() && !isChecking)
+        {
+            isChecking = true;
+            StartCoroutine(DelayStart());
+        }
     }
 
     void SpawnJellies()
@@ -32,15 +38,20 @@ public class S_JellyTable : MonoBehaviour
         {
             for (int x = 0; x < SizeX; x++)
             {
-                GameObject jelly = Instantiate(JellyPrefab, transform);
-                Vector2 Pos = jelly.GetComponent<RectTransform>().anchoredPosition;
-                Pos.x = x * 80.0f;
-                Pos.y = y * -80.0f;
-                jelly.GetComponent<RectTransform>().anchoredPosition = Pos + Offset;
-                jelly.GetComponent<S_Jelly>().GridPos = new Vector2(x, y);
-                Jellies[x, y] = jelly;
+                SpawnAt(x, y);
             }
         }
+    }
+
+    void SpawnAt(int x, int y)
+    {
+        GameObject jelly = Instantiate(JellyPrefab, transform);
+        Vector2 Pos = jelly.GetComponent<RectTransform>().anchoredPosition;
+        Pos.x = x * 80.0f;
+        Pos.y = y * -80.0f;
+        jelly.GetComponent<RectTransform>().anchoredPosition = Pos + Offset;
+        jelly.GetComponent<S_Jelly>().GridPos = new Vector2(x, y);
+        Jellies[x, y] = jelly;
     }
 
     public void ResetTable()
@@ -50,27 +61,68 @@ public class S_JellyTable : MonoBehaviour
             Destroy(j);
         }
         SpawnJellies();
-        StartCoroutine(DelayStart());
     }
 
     IEnumerator DelayStart()
     {
-        yield return new WaitForSeconds(3.0f);
+        yield return new WaitForSeconds(0.5f);
+        CheckMatch();
+    }
+
+    public void CheckMatch()
+    {
         MatchJelliesX();
         MatchJelliesY();
+        if(ToKillObj.Count != 0)
+        {
+            foreach (GameObject j in ToKillObj)
+            {
+                Vector2 Pos = j.GetComponent<S_Jelly>().GridPos;
+                j.GetComponent<S_Jelly>().Matched();
+                SpawnAt((int)Pos.x, (int)Pos.y);
+            }
+            ToKillObj.Clear();
+        }
+    }
+
+    bool ValidKill(GameObject obj)
+    {
+        foreach (GameObject j in ToKillObj)
+        {
+            if(j == obj)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public bool IsTableSet()
+    {
+        foreach (GameObject j in Jellies)
+        {
+            if(j && !j.GetComponent<S_Jelly>().isSet)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     void KillMatch()
     {
-        if (matchObj[0].GetComponent<S_Jelly>().type != E_JellyType.Stone)
+        if (matchObj[0] && matchObj[0].GetComponent<S_Jelly>().type != E_JellyType.Stone)
         {
+            FindObjectOfType<S_JellyManager>().AddScore(matchObj.Count);
             if (matchObj.Count >= 5)
             {
                 Debug.Log("More than 5 matched!");
                 foreach (GameObject j in matchObj)
                 {
-                    //Destroy(j);
-                    j.SetActive(false);
+                    if (ValidKill(j))
+                    {
+                        ToKillObj.Add(j);
+                    }
                 }
             }
             else if (matchObj.Count >= 3)
@@ -78,15 +130,17 @@ public class S_JellyTable : MonoBehaviour
                 Debug.Log("More than 3 matched!");
                 foreach (GameObject j in matchObj)
                 {
-                    //Destroy(j);
-                    j.SetActive(false);
+                    if (ValidKill(j))
+                    {
+                        ToKillObj.Add(j);
+                    }
                 }
             }
         }
         matchObj.Clear();
     }
 
-    public void MatchJelliesX()
+    void MatchJelliesX()
     {
         for (int y = 0; y < SizeY; y++)
         {
@@ -96,15 +150,18 @@ public class S_JellyTable : MonoBehaviour
                 if (x == 0) { matchObj.Add(Jellies[x, y]); }
                 else
                 {
-                    if (Jellies[x, y].GetComponent<S_Jelly>().type == Jellies[x - 1, y].GetComponent<S_Jelly>().type)
+                    if (Jellies[x, y] && Jellies[x - 1, y])
                     {
-                        matchObj.Add(Jellies[x, y]);
-                    }
-                    else
-                    {
-                        KillMatch();
-                        matchObj.Clear();
-                        matchObj.Add(Jellies[x, y]);
+                        if (Jellies[x, y].GetComponent<S_Jelly>().type == Jellies[x - 1, y].GetComponent<S_Jelly>().type)
+                        {
+                            matchObj.Add(Jellies[x, y]);
+                        }
+                        else
+                        {
+                            KillMatch();
+                            matchObj.Clear();
+                            matchObj.Add(Jellies[x, y]);
+                        }
                     }
                     if (x + 1 == SizeX) { KillMatch(); }
                 }
@@ -112,7 +169,7 @@ public class S_JellyTable : MonoBehaviour
         }
     }
 
-    public void MatchJelliesY()
+    void MatchJelliesY()
     {
         for (int x = 0; x < SizeX; x++)
         {
@@ -122,15 +179,18 @@ public class S_JellyTable : MonoBehaviour
                 if (y == 0) { matchObj.Add(Jellies[x, y]); }
                 else
                 {
-                    if (Jellies[x, y].GetComponent<S_Jelly>().type == Jellies[x, y - 1].GetComponent<S_Jelly>().type)
+                    if (Jellies[x, y] && Jellies[x, y - 1])
                     {
-                        matchObj.Add(Jellies[x, y]);
-                    }
-                    else
-                    {
-                        KillMatch();
-                        matchObj.Clear();
-                        matchObj.Add(Jellies[x, y]);
+                        if (Jellies[x, y].GetComponent<S_Jelly>().type == Jellies[x, y - 1].GetComponent<S_Jelly>().type)
+                        {
+                            matchObj.Add(Jellies[x, y]);
+                        }
+                        else
+                        {
+                            KillMatch();
+                            matchObj.Clear();
+                            matchObj.Add(Jellies[x, y]);
+                        }
                     }
                     if (y + 1 == SizeY) { KillMatch(); }
                 }

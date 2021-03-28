@@ -12,14 +12,15 @@ public enum E_JellyType
     Red,
     Yellow,
     Stone,
-    Bomb
+    Bomb,
+    Default
 }
 
 public class S_Jelly : MonoBehaviour
 {
     [SerializeField] List<Sprite> Icons;
 
-    public E_JellyType type = E_JellyType.Black;
+    public E_JellyType type = E_JellyType.Default;
     Image CurrentImage;
     Animator anim;
     S_Jelly TargetJelly;
@@ -29,6 +30,7 @@ public class S_Jelly : MonoBehaviour
     bool shouldUpdate = false;
     bool good = false;
 
+    public bool isSet = false;
     public Vector2 GridPos;
 
     // Start is called before the first frame update
@@ -114,6 +116,8 @@ public class S_Jelly : MonoBehaviour
                 break;
             case E_JellyType.Bomb:
                 break;
+            case E_JellyType.Default:
+                break;
             default:
                 break;
         }
@@ -122,10 +126,30 @@ public class S_Jelly : MonoBehaviour
 
     IEnumerator Spawn()
     {
-        yield return new WaitForSeconds(Random.Range(0.5f, 2.0f));
+        yield return new WaitForSeconds(Random.Range(0.0f, 1.0f));
         anim.SetTrigger("Fall");
         yield return new WaitForSeconds(0.8f);
         FindObjectOfType<S_SoundMana>().PlayBounce();
+        isSet = true;
+        if(FindObjectOfType<S_JellyTable>().Jellies.Length == 72)
+        {
+            FindObjectOfType<S_JellyTable>().isChecking = false;
+            FindObjectOfType<S_JellyManager>().MaxStones = 0;
+        }
+    }
+
+    public void Matched()
+    {
+        if (anim)
+        {
+            anim.SetTrigger("Match");
+        }
+        Invoke("KillSelf", 0.5f);
+    }
+
+    void KillSelf()
+    {
+        Destroy(gameObject);
     }
 
     public void DragJelly()
@@ -139,6 +163,7 @@ public class S_Jelly : MonoBehaviour
             transform.SetAsLastSibling();
             transform.parent.SetAsLastSibling();
             transform.position = Input.mousePosition;
+            isSet = false;
         }
     }
 
@@ -149,8 +174,8 @@ public class S_Jelly : MonoBehaviour
             shouldUpdate = true;
             FindClosestJelly();
             SwapJellies();
-            FindObjectOfType<S_JellyTable>().MatchJelliesX();
-            FindObjectOfType<S_JellyTable>().MatchJelliesY();
+            isSet = true;
+            FindObjectOfType<S_JellyTable>().isChecking = false;
         }
     }
 

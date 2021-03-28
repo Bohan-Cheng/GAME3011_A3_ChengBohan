@@ -11,8 +11,11 @@ public class S_JellyTable : MonoBehaviour
     List<GameObject> matchObj;
     List<GameObject> ToKillObj;
     public bool isChecking = false;
+    public bool isMatching = false;
+    public bool canDrag = true;
 
     Vector2 Offset = new Vector2(-320.0f, 320.0f);
+    public Vector2 BombGridPos = new Vector2(-1, -1);
 
     void Start()
     {
@@ -25,11 +28,29 @@ public class S_JellyTable : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(IsTableSet() && !isChecking)
+
+    }
+
+    public void CheckForMatch()
+    {
+        if (IsTableSet())
         {
             isChecking = true;
             StartCoroutine(DelayStart());
         }
+        
+    }
+
+    public void JellyDropped()
+    {
+        canDrag = false;
+        CancelInvoke("ResetCanDrag");
+        Invoke("ResetCanDrag", 0.7f);
+    }
+
+    void ResetCanDrag()
+    {
+        canDrag = true;
     }
 
     void SpawnJellies()
@@ -83,7 +104,14 @@ public class S_JellyTable : MonoBehaviour
             }
             ToKillObj.Clear();
             FindObjectOfType<S_SoundMana>().PlayPop();
+            isMatching = true;
         }
+        else
+        {
+            isChecking = false;
+            isMatching = false;
+        }
+        
     }
 
     IEnumerator RespawnJelly(GameObject j)
@@ -128,10 +156,16 @@ public class S_JellyTable : MonoBehaviour
             if (matchObj.Count >= 5)
             {
                 Debug.Log("More than 5 matched!");
+                bool BombSpawned = false;
                 foreach (GameObject j in matchObj)
                 {
                     if (ValidKill(j))
                     {
+                        if(!BombSpawned)
+                        {
+                            BombGridPos = matchObj[Mathf.RoundToInt(matchObj.Count/2)].GetComponent<S_Jelly>().GridPos;
+                            BombSpawned = true;
+                        }
                         ToKillObj.Add(j);
                     }
                 }

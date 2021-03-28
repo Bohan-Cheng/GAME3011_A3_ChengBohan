@@ -24,6 +24,9 @@ public class S_Jelly : MonoBehaviour
     Image CurrentImage;
     Animator anim;
     S_Jelly TargetJelly;
+    S_Jelly ReverseJelly;
+    S_JellyTable Table;
+    S_JellyManager Mana;
 
     Vector3 OriPosition;
     bool isDraging = false;
@@ -36,13 +39,15 @@ public class S_Jelly : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Table = FindObjectOfType<S_JellyTable>();
+        Mana = FindObjectOfType<S_JellyManager>();
         CurrentImage = GetComponentInChildren<Image>();
         anim = GetComponentInChildren<Animator>();
-        StartCoroutine(Spawn());
 
         OriPosition = transform.localPosition;
 
         SetDifficulty();
+        StartCoroutine(Spawn());
     }
 
     // Update is called once per frame
@@ -67,7 +72,7 @@ public class S_Jelly : MonoBehaviour
     {
         while (!good)
         {
-            switch (FindObjectOfType<S_JellyManager>().difficulty)
+            switch (Mana.difficulty)
             {
                 case E_Difficulty.Easy:
                     good = SetType((E_JellyType)Random.Range(0, 3));
@@ -87,9 +92,14 @@ public class S_Jelly : MonoBehaviour
     bool SetType(E_JellyType t)
     {
         type = t;
-        CurrentImage.sprite = Icons[(int)t];
+        if(GridPos == Table.BombGridPos)
+        {
+            type = E_JellyType.Bomb;
+            Table.BombGridPos = new Vector2(-1, -1);
+        }
+        CurrentImage.sprite = Icons[(int)type];
 
-        switch (t)
+        switch (type)
         {
             case E_JellyType.Black:
                 break;
@@ -104,13 +114,13 @@ public class S_Jelly : MonoBehaviour
             case E_JellyType.Yellow:
                 break;
             case E_JellyType.Stone:
-                if (FindObjectOfType<S_JellyManager>().MaxStones == 0)
+                if (Mana.MaxStones == 0)
                 {
                     return false;
                 }
                 else
                 {
-                    FindObjectOfType<S_JellyManager>().MaxStones--;
+                    Mana.MaxStones--;
                     anim.enabled = false;
                 }
                 break;
@@ -131,10 +141,10 @@ public class S_Jelly : MonoBehaviour
         yield return new WaitForSeconds(0.8f);
         FindObjectOfType<S_SoundMana>().PlayBounce();
         isSet = true;
-        if(FindObjectOfType<S_JellyTable>().Jellies.Length == 72)
+        if (Table.Jellies.Length == 72)
         {
-            FindObjectOfType<S_JellyTable>().isChecking = false;
-            FindObjectOfType<S_JellyManager>().MaxStones = 0;
+            Mana.MaxStones = 0;
+            Table.CheckForMatch();
         }
     }
 
@@ -149,7 +159,7 @@ public class S_Jelly : MonoBehaviour
 
     public void DragJelly()
     {
-        if (type != E_JellyType.Stone)
+        if (type != E_JellyType.Stone && !Table.isChecking && Table.canDrag)
         {
             if (shouldUpdate)
             {
@@ -164,13 +174,25 @@ public class S_Jelly : MonoBehaviour
 
     public void DropJelly()
     {
-        if (type != E_JellyType.Stone)
+        if (type != E_JellyType.Stone && !Table.isChecking && Table.canDrag)
         {
             shouldUpdate = true;
             FindClosestJelly();
             SwapJellies();
             isSet = true;
-            FindObjectOfType<S_JellyTable>().isChecking = false;
+            Table.CheckForMatch();
+            Invoke("CheckForReverse", 0.6f);
+            Table.canDrag = false;
+            Table.JellyDropped();
+        }
+        
+    }
+
+    void CheckForReverse()
+    {
+        if(!Table.isMatching)
+        {
+            ReverseJellies();
         }
     }
 
@@ -182,8 +204,8 @@ public class S_Jelly : MonoBehaviour
             Vector3 temp = TargetJelly.OriPosition;
             Vector2 temp2 = TargetJelly.GridPos;
 
-            FindObjectOfType<S_JellyTable>().Jellies[(int)GridPos.x, (int)GridPos.y] = TargetJelly.gameObject;
-            FindObjectOfType<S_JellyTable>().Jellies[(int)temp2.x, (int)temp2.y] = gameObject;
+            Table.Jellies[(int)GridPos.x, (int)GridPos.y] = TargetJelly.gameObject;
+            Table.Jellies[(int)temp2.x, (int)temp2.y] = gameObject;
             
 
             TargetJelly.OriPosition = OriPosition;
@@ -197,16 +219,48 @@ public class S_Jelly : MonoBehaviour
             TargetJelly.anim.SetTrigger("Bounce");
             FindObjectOfType<S_SoundMana>().PlayBounce();
 
+            ReverseJelly = TargetJelly;
             TargetJelly = null;
         }
     }
+
+    void ReverseJellies()
+    {
+        TargetJelly = ReverseJelly;
+        ReverseJelly = null;
+        // TODO: Swap back if no match
+        if (TargetJelly && TargetJelly.type != E_JellyType.Stone)
+        {
+            Vector3 temp = TargetJelly.OriPosition;
+            Vector2 temp2 = TargetJelly.GridPos;
+
+            Table.Jellies[(int)GridPos.x, (int)GridPos.y] = TargetJelly.gameObject;
+            Table.Jellies[(int)temp2.x, (int)temp2.y] = gameObject;
+
+
+            TargetJelly.OriPosition = OriPosition;
+            TargetJelly.GridPos = GridPos;
+            TargetJelly.shouldUpdate = true;
+            shouldUpdate = true;
+
+            OriPosition = temp;
+            GridPos = temp2;
+
+            anim.SetTrigger("Bounce");
+            TargetJelly.anim.SetTrigger("Bounce");
+            FindObjectOfType<S_SoundMana>().PlayBounce();
+
+            TargetJelly = null;
+        }
+    }
+
     void FindClosestJelly()
     {
         GameObject closest = null;
         float distance = Mathf.Infinity;
         Vector3 position = transform.localPosition;
 
-        foreach (GameObject go in FindObjectOfType<S_JellyTable>().Jellies)
+        foreach (GameObject go in Table.Jellies)
         {
             if (go != transform.gameObject)
             {

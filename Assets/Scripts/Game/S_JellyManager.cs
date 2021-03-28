@@ -15,6 +15,7 @@ public class S_JellyManager : MonoBehaviour
     public E_Difficulty difficulty = E_Difficulty.Easy;
     public int MaxStones = 5;
     public int Score = 0;
+
     [SerializeField] Text ModeText;
     [SerializeField] Text ScoreText;
 
@@ -26,7 +27,7 @@ public class S_JellyManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        
     }
 
     public void EasyMode()

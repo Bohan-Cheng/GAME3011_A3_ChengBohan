@@ -176,6 +176,7 @@ public class S_Jelly : MonoBehaviour
 
     void SwapJellies()
     {
+        // TODO: Swap back if no match
         if (TargetJelly && TargetJelly.type != E_JellyType.Stone)
         {
             Vector3 temp = TargetJelly.OriPosition;

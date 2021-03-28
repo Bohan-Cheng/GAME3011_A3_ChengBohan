@@ -75,13 +75,25 @@ public class S_JellyTable : MonoBehaviour
         MatchJelliesY();
         if(ToKillObj.Count != 0)
         {
+            FindObjectOfType<S_JellyManager>().AddScore(ToKillObj.Count * 25);
             foreach (GameObject j in ToKillObj)
             {
-                Vector2 Pos = j.GetComponent<S_Jelly>().GridPos;
                 j.GetComponent<S_Jelly>().Matched();
-                SpawnAt((int)Pos.x, (int)Pos.y);
+                StartCoroutine(RespawnJelly(j));
             }
             ToKillObj.Clear();
+            FindObjectOfType<S_SoundMana>().PlayPop();
+        }
+    }
+
+    IEnumerator RespawnJelly(GameObject j)
+    {
+        yield return new WaitForSeconds(0.5f);
+        if (j)
+        {
+            Vector2 Pos = j.GetComponent<S_Jelly>().GridPos;
+            Destroy(j);
+            SpawnAt((int)Pos.x, (int)Pos.y);
         }
     }
 
@@ -113,7 +125,6 @@ public class S_JellyTable : MonoBehaviour
     {
         if (matchObj[0] && matchObj[0].GetComponent<S_Jelly>().type != E_JellyType.Stone)
         {
-            FindObjectOfType<S_JellyManager>().AddScore(matchObj.Count);
             if (matchObj.Count >= 5)
             {
                 Debug.Log("More than 5 matched!");

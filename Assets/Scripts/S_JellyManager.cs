@@ -26,7 +26,7 @@ public class S_JellyManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     public void EasyMode()

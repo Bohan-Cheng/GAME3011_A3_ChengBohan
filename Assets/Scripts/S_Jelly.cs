@@ -144,12 +144,7 @@ public class S_Jelly : MonoBehaviour
         {
             anim.SetTrigger("Match");
         }
-        Invoke("KillSelf", 0.5f);
-    }
-
-    void KillSelf()
-    {
-        Destroy(gameObject);
+        //Invoke("KillSelf", 0.5f);
     }
 
     public void DragJelly()

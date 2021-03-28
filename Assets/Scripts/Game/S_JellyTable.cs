@@ -181,6 +181,33 @@ public class S_JellyTable : MonoBehaviour
                     }
                 }
             }
+            else
+            {
+                if (matchObj[0].GetComponent<S_Jelly>().type == E_JellyType.Bomb)
+                {
+                    int PosX = (int)matchObj[0].GetComponent<S_Jelly>().GridPos.x;
+                    int PosY = (int)matchObj[0].GetComponent<S_Jelly>().GridPos.y;
+                    for (int y = PosY - 1; y < PosY + 2; y++)
+                    {
+                        for (int x = PosX - 1; x < PosX + 2; x++)
+                        {
+                            if (x >= 0 && y >= 0 && x < SizeX && y < SizeY)
+                            {
+                                matchObj.Add(Jellies[x, y]);
+                            }
+                        }
+                    }
+
+                    foreach (GameObject j in matchObj)
+                    {
+                        if (ValidKill(j))
+                        {
+                            ToKillObj.Add(j);
+                        }
+                    }
+
+                }
+            }
         }
         matchObj.Clear();
     }

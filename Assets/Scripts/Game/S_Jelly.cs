@@ -152,7 +152,15 @@ public class S_Jelly : MonoBehaviour
     {
         if (anim)
         {
-            anim.SetTrigger("Match");
+            if(type == E_JellyType.Bomb)
+            {
+                SetToFront();
+                anim.SetTrigger("Explode");
+            }
+            else
+            {
+                anim.SetTrigger("Match");
+            }
         }
         //Invoke("KillSelf", 0.5f);
     }
@@ -165,11 +173,16 @@ public class S_Jelly : MonoBehaviour
             {
                 shouldUpdate = false;
             }
-            transform.SetAsLastSibling();
-            transform.parent.SetAsLastSibling();
+            SetToFront();
             transform.position = Input.mousePosition;
             isSet = false;
         }
+    }
+
+    void SetToFront()
+    {
+        transform.SetAsLastSibling();
+        transform.parent.SetAsLastSibling();
     }
 
     public void DropJelly()

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public enum E_Difficulty
 {
@@ -15,24 +16,52 @@ public class S_JellyManager : MonoBehaviour
     public E_Difficulty difficulty = E_Difficulty.Easy;
     public int MaxStones = 5;
     public int Score = 0;
+    public int Goal = 5000;
+    public int TimeCounter = 250;
+    public bool isGameOver = false;
 
     [SerializeField] Text ModeText;
     [SerializeField] Text ScoreText;
+    [SerializeField] Text TimeCounterText;
+    [SerializeField] Text GoalText;
 
     void Start()
     {
         ScoreText.text = Score.ToString();
+        TimeCounterText.text = "Time: " + TimeCounter.ToString();
+        GoalText.text = "Goal: " + Goal.ToString();
+        StartCoroutine(CountTime());
+    }
+
+    IEnumerator CountTime()
+    {
+        while (!isGameOver)
+        {
+            yield return new WaitForSeconds(1.0f);
+            TimeCounter--;
+            if (TimeCounter <= 0)
+            {
+                TimeCounter = 0;
+                isGameOver = true;
+            }
+            TimeCounterText.text = "Time: " + TimeCounter.ToString();
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if(isGameOver)
+        {
+            SceneManager.LoadScene("Map_End");
+        }
     }
 
     public void EasyMode()
     {
         difficulty = E_Difficulty.Easy;
+        TimeCounter = 250;
+        Goal = 5000;
         MaxStones = 0;
         ModeText.text = "Mode: Easy";
         ManaReset();
@@ -41,6 +70,8 @@ public class S_JellyManager : MonoBehaviour
     public void MediumMode()
     {
         difficulty = E_Difficulty.Medium;
+        TimeCounter = 200;
+        Goal = 6000;
         MaxStones = 0;
         ModeText.text = "Mode: Medium";
         ManaReset();
@@ -49,6 +80,8 @@ public class S_JellyManager : MonoBehaviour
     public void HardMode()
     {
         difficulty = E_Difficulty.Hard;
+        TimeCounter = 250;
+        Goal = 3200;
         MaxStones = 10;
         ModeText.text = "Mode: Hard";
         ManaReset();
@@ -58,12 +91,19 @@ public class S_JellyManager : MonoBehaviour
     {
         Score += score;
         ScoreText.text = Score.ToString();
+        if(Score >= Goal)
+        {
+            isGameOver = true;
+        }
     }
 
     void ManaReset()
     {
+        isGameOver = false;
         Score = 0;
         ScoreText.text = Score.ToString();
+        TimeCounterText.text = "Time: " + TimeCounter.ToString();
+        GoalText.text = "Goal: " + Goal.ToString();
         FindObjectOfType<S_JellyTable>().ResetTable();
     }
 }

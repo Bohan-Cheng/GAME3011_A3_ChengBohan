@@ -10,14 +10,16 @@ public enum E_JellyType
     Green,
     Purple,
     Red,
-    Yellow
+    Yellow,
+    Stone,
+    Bomb
 }
 
 public class S_Jelly : MonoBehaviour
 {
     [SerializeField] List<Sprite> Icons;
 
-    E_JellyType type = E_JellyType.Black;
+    public E_JellyType type = E_JellyType.Black;
     Image CurrentImage;
     Animator anim;
     S_Jelly TargetJelly;
@@ -25,8 +27,9 @@ public class S_Jelly : MonoBehaviour
     Vector3 OriPosition;
     bool isDraging = false;
     bool shouldUpdate = false;
+    bool good = false;
 
-    [HideInInspector] public Vector2 GridPos;
+    public Vector2 GridPos;
 
     // Start is called before the first frame update
     void Start()
@@ -37,7 +40,7 @@ public class S_Jelly : MonoBehaviour
 
         OriPosition = transform.localPosition;
 
-        SetType((E_JellyType)Random.Range(0, 6));
+        SetDifficulty();
     }
 
     // Update is called once per frame
@@ -58,7 +61,28 @@ public class S_Jelly : MonoBehaviour
 
     }
 
-    void SetType(E_JellyType t)
+    void SetDifficulty()
+    {
+        while (!good)
+        {
+            switch (FindObjectOfType<S_JellyManager>().difficulty)
+            {
+                case E_Difficulty.Easy:
+                    good = SetType((E_JellyType)Random.Range(0, 3));
+                    break;
+                case E_Difficulty.Medium:
+                    good = SetType((E_JellyType)Random.Range(0, 4));
+                    break;
+                case E_Difficulty.Hard:
+                    good = SetType((E_JellyType)Random.Range(0, 7));
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    bool SetType(E_JellyType t)
     {
         type = t;
         CurrentImage.sprite = Icons[(int)t];
@@ -77,9 +101,23 @@ public class S_Jelly : MonoBehaviour
                 break;
             case E_JellyType.Yellow:
                 break;
+            case E_JellyType.Stone:
+                if (FindObjectOfType<S_JellyManager>().MaxStones == 0)
+                {
+                    return false;
+                }
+                else
+                {
+                    FindObjectOfType<S_JellyManager>().MaxStones--;
+                    anim.enabled = false;
+                }
+                break;
+            case E_JellyType.Bomb:
+                break;
             default:
                 break;
         }
+        return true;
     }
 
     IEnumerator Spawn()
@@ -92,28 +130,40 @@ public class S_Jelly : MonoBehaviour
 
     public void DragJelly()
     {
-        if(shouldUpdate)
+        if (type != E_JellyType.Stone)
         {
-            shouldUpdate = false;
+            if (shouldUpdate)
+            {
+                shouldUpdate = false;
+            }
+            transform.SetAsLastSibling();
+            transform.parent.SetAsLastSibling();
+            transform.position = Input.mousePosition;
         }
-        transform.SetAsLastSibling();
-        transform.parent.SetAsLastSibling();
-        transform.position = Input.mousePosition;
     }
 
     public void DropJelly()
     {
-        shouldUpdate = true;
-        FindClosestJelly();
-        SwapJellies();
+        if (type != E_JellyType.Stone)
+        {
+            shouldUpdate = true;
+            FindClosestJelly();
+            SwapJellies();
+            FindObjectOfType<S_JellyTable>().MatchJelliesX();
+            FindObjectOfType<S_JellyTable>().MatchJelliesY();
+        }
     }
 
     void SwapJellies()
     {
-        if (TargetJelly)
+        if (TargetJelly && TargetJelly.type != E_JellyType.Stone)
         {
             Vector3 temp = TargetJelly.OriPosition;
             Vector2 temp2 = TargetJelly.GridPos;
+
+            FindObjectOfType<S_JellyTable>().Jellies[(int)GridPos.x, (int)GridPos.y] = TargetJelly.gameObject;
+            FindObjectOfType<S_JellyTable>().Jellies[(int)temp2.x, (int)temp2.y] = gameObject;
+            
 
             TargetJelly.OriPosition = OriPosition;
             TargetJelly.GridPos = GridPos;
@@ -125,17 +175,17 @@ public class S_Jelly : MonoBehaviour
             anim.SetTrigger("Bounce");
             TargetJelly.anim.SetTrigger("Bounce");
             FindObjectOfType<S_SoundMana>().PlayBounce();
+
+            TargetJelly = null;
         }
     }
     void FindClosestJelly()
     {
-        GameObject[] gos;
-        gos = GameObject.FindGameObjectsWithTag("Jelly");
         GameObject closest = null;
         float distance = Mathf.Infinity;
         Vector3 position = transform.localPosition;
 
-        foreach (GameObject go in gos)
+        foreach (GameObject go in FindObjectOfType<S_JellyTable>().Jellies)
         {
             if (go != transform.gameObject)
             {

@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class S_SoundMana : MonoBehaviour
 {
-    [SerializeField] AudioSource Jellysound;
+    [SerializeField] AudioSource JellyBounce;
+    [SerializeField] AudioSource JellyPop;
 
     // Start is called before the first frame update
     void Start()
@@ -20,6 +21,11 @@ public class S_SoundMana : MonoBehaviour
 
     public void PlayBounce()
     {
-        Jellysound.Play();
+        JellyBounce.Play();
+    }
+
+    public void PlayPop()
+    {
+        JellyPop.Play();
     }
 }
